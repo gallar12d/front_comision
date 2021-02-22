@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
+import ReactTooltip from "react-tooltip";
+
 import moment from "moment";
 const ListRecursos = (props) => {
   const [recursos, setRecursos] = useState(props.recursos);
+  
 
   useEffect(() => {
     setRecursos(props.recursos);
@@ -9,32 +12,70 @@ const ListRecursos = (props) => {
   const editRecurso = (recurso) => {
     props.selectRecurso(recurso);
   };
+  let i = 1;
+  let clase = "";
   const list = recursos.map((recurso) => {
+    if (i % 2 == 0) {
+      clase = "bg-gray-100";
+    } else {
+      clase = "";
+    }
+    i++;
+    let claves;
+
     return (
-      <tr className="border-solid border-2 border-dark-500" key={recurso.id}>
-        <td>{recurso.titulo}</td>
-        <td>{recurso.claves}</td>
-        <td>{recurso.descripcion}</td>
-        <td>{recurso.fuente}</td>
-        <td>{recurso.tipo_recurso}</td>
-        <td>{moment(recurso.cobertura.fecha_inicial).format('DD/MM/yyyy')}</td>
-        <td>{moment(recurso.cobertura.fecha_final).format('DD/MM/yyyy')}</td>
-        <td>{recurso.cobertura.latitud}</td>
-        <td>{recurso.cobertura.longitud}</td>
-        <td>{recurso.cobertura.departamento}</td>
-        <td>{recurso.cobertura.ciudad}</td>
-        <td>
+      <tr key ={recurso.id} className={"border-b hover:bg-orange-100 " + clase}>
+        <td className="p-3 px-5">{recurso.titulo}</td>
+        <td className="p-3 px-5">
+          {
+            JSON.parse(recurso.claves).map((v)=>{
+              return v.text
+            }).join(',')}
+        </td>
+        <td data-tip data-for={'id'+recurso.id} className="p-3 px-5">{recurso.descripcion.substring(0, 15) + '...'}
+        
+        <ReactTooltip place="right" className="w-8/12"  id={'id'+recurso.id}>
+            <span>{recurso.descripcion}</span>
+          </ReactTooltip>
+        </td>
+        
+        <td className="p-3 px-5">{recurso.fuente}</td>
+        <td className="p-3 px-5">{recurso.tipo_recurso}</td>
+        <td className="p-3 px-5">
+          {moment(recurso.cobertura.fecha_inicial).format("DD/MM/yyyy")}
+        </td>
+        <td className="p-3 px-5">
+          {moment(recurso.cobertura.fecha_final).format("DD/MM/yyyy")}
+        </td>
+        <td className="p-3 px-5">{recurso.cobertura.latitud}</td>
+        <td className="p-3 px-5">{recurso.cobertura.longitud}</td>
+        <td className="p-3 px-5">{      
+        
+        props.departamentos[recurso.cobertura.departamento].departamento
+        
+        
+        }</td>
+        <td className="p-3 px-5">{
+          props.departamentos[recurso.cobertura.departamento].ciudades[recurso.cobertura.ciudad]
+
+        }</td>
+        <td className="p-3 px-5 flex justify-end">
           <button
             onClick={() => props.selectRecurso(recurso)}
-            className="bg-grey-light hover:bg-grey text-grey-darkest font-bold py-2 px-4 rounded inline-flex items-center"
+            type="button"
+            className="mr-3 text-sm bg-yellow-400 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"
           >
-            <span>Edit</span>
+            Editar
           </button>
           <button
-            onClick={() => props.deleteRecurso(recurso.id)}
-            className="bg-grey-500 hover:bg-grey text-grey-darkest font-bold py-2 px-4 rounded inline-flex items-center"
+            onClick={() => {
+              if (window.confirm("Seguro desea eliminar este registro?"))
+                props.deleteRecurso(recurso.id);
+            }}
+            type="button"
+            className="text-sm bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"
           >
-            <span>Delete</span>
+            Eliminar
           </button>
         </td>
       </tr>
@@ -42,31 +83,31 @@ const ListRecursos = (props) => {
   });
 
   return (
-    <div className=" flex items-center justify-center">
-      <div className="overflow-x-scroll w-11/12 mt-10  mr-3 bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    <div className="w-11/12 mx-auto">
+      <div className="bg-gray-200 shadow-md rounded my-6">
         <br />
         <h1 className="block text-gray-700 font-bold mb-2 text-xl text-center">
           Listado Recursos
         </h1>
         <br />
-        <table className="overflow-x-scroll table-fixed">
-          <thead>
-            <tr>
-              <th className="w-auto ">Titulo</th>
-              <th className=" w-auto">Claves</th>
-              <th className="w-auto">Descripción</th>
-              <th className="w-auto">Fuente</th>
-              <th className="w-auto">Tipo Recurso</th>
-              <th className="w-auto">Fecha Inicial</th>
-              <th className="w-auto">Fecha Final</th>
-              <th className="w-auto">longitud</th>
-              <th className="w-auto">Latitud</th>
-              <th className="w-auto">Departamento</th>
-              <th className="w-auto">Ciudad</th>
-              <th className="w-auto">Acciones</th>
+        <table className="table-auto overflow-auto md:overflow-scroll text-md bg-white shadow-md rounded mb-4">
+          <tbody className="">
+            <tr className="border-b">
+              <th className="text-left p-3 px-5 ">Titulo</th>
+              <th className=" text-left p-3 px-5">Claves</th>
+              <th className="text-left p-3 px-5">Descripción</th>
+              <th className="text-left p-3 px-5">Fuente</th>
+              <th className="text-left p-3 px-5">Tipo Recurso</th>
+              <th className="text-left p-3 px-5">Fecha Inicial</th>
+              <th className="text-left p-3 px-5">Fecha Final</th>
+              <th className="text-left p-3 px-5">longitud</th>
+              <th className="text-left p-3 px-5">Latitud</th>
+              <th className="text-left p-3 px-5">Departamento</th>
+              <th className="text-left p-3 px-5">Ciudad</th>
+              <th className="text-left p-3 px-5">Acciones</th>
             </tr>
-          </thead>
-          <tbody className = "">{list}</tbody>
+            {list && list}
+          </tbody>
         </table>
       </div>
     </div>

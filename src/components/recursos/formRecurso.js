@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import moment from "moment";
 import { WithContext as ReactTags } from "react-tag-input";
+import { Modal } from "react-bootstrap";
 
 const FormRecurso = (props) => {
   const { register, errors, handleSubmit, setValue } = useForm();
@@ -11,7 +12,7 @@ const FormRecurso = (props) => {
   const [departamentos, setDepartamentos] = useState([]);
   const [ciudades, setCiudades] = useState([]);
 
-  useEffect(() => {
+  useEffect(async () => {
     geo();
     getDepartaments();
   }, []);
@@ -52,14 +53,12 @@ const FormRecurso = (props) => {
     let results = await departamentos.filter(function (d) {
       return d.id == id;
     });
-    console.log(results[0].ciudades);
     setCiudades(results[0].ciudades);
+    return true;
   };
 
   const onSubmit = (data, e) => {
-    console.log(data);
     data.claves = JSON.stringify(tags);
-    console.log(data);
     e.preventDefault();
     props.createRecurso(data);
     e.target.reset();
@@ -97,7 +96,7 @@ const FormRecurso = (props) => {
             Información Inicial
           </h3>
           <hr className="" />
-          <div className="grid grid-cols-2 gap-4" >
+          <div className="grid grid-cols-2 gap-4">
             <div className=" mb-4 mt-6 col-span-1 ">
               <label
                 className="text-left block text-gray-700 text-sm font-bold mb-2"
@@ -143,7 +142,7 @@ const FormRecurso = (props) => {
                   handleAddition={(algo) => handleAddition(algo)}
                   handleDrag={handleDrag}
                   delimiters={delimiters}
-                  placeholder="Ingrese sus claves"
+                  placeholder="Ingrese sus claves (presione enter para agregar cada una)"
                   name="claves"
                   inputFieldPosition="top"
                   classNames={{
@@ -165,26 +164,27 @@ const FormRecurso = (props) => {
               </span>
             </div>
 
-            <div className="mb-4">
+            <div className="mb-4 col-span-2">
               <label
                 className="text-left block text-gray-700 text-sm font-bold mb-2"
                 htmlFor="descripcion"
               >
                 Descripción
               </label>
-              <input
+              <textarea
                 ref={register({
                   required: {
                     value: true,
-                    message: "La descripción es requerida",
+                    message: "La Descripción es requerida",
                   },
                 })}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 name="descripcion"
-                id="descripcion"
-                type="text"
-                placeholder=""
-              />
+                id=""
+                cols="30"
+                rows="10"
+              ></textarea>
+
               <span className="text-red-500 text-small d-block mb-2">
                 {errors.descripcion && errors.descripcion.message}
               </span>
@@ -240,10 +240,8 @@ const FormRecurso = (props) => {
 
             <h3 className="col-span-2  block text-gray-700 font-bold mb-2 text-md text-left">
               Cobertura
-              
             </h3>
-            <hr className ="col-span-2 "/>
-            
+            <hr className="col-span-2 " />
 
             <div className="mb-4 mt-4">
               <label
@@ -364,8 +362,10 @@ const FormRecurso = (props) => {
                 })}
                 name="departamento"
               >
+                <option value="">Seleccione...</option>
                 {departamentos.map((option) => (
-                  <option key={option.id_category} value={option.id}>
+                  
+                  <option key={option.id} value={option.id}>
                     {option.departamento}
                   </option>
                 ))}

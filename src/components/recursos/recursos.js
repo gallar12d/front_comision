@@ -4,14 +4,21 @@ import { useHistory } from "react-router-dom";
 import ListRecursos from "./ListRecursos";
 import FormRecurso from "./formRecurso";
 import FormUpdateRecurso from "./formUpdateRecurso";
+import { Modal, Button } from "react-bootstrap";
 
 const Recursos = () => {
   const url = global.config.API_URL;
+  const [departamentos, setDepartamentos] = useState([]);
+  const [ciudades, setCiudades] = useState([]);
 
   let history = useHistory();
   const [recursos, setRecursos] = useState([]);
   const [recurso, setRecurso] = useState();
   const [typeForm, setTypeForm] = useState("create");
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
   const loadData = async () => {
     const response = await fetch(url + "recursos", {
       method: "GET",
@@ -26,14 +33,22 @@ const Recursos = () => {
 
   useEffect(async () => {
     loadData();
+    getDepartaments();
   }, []);
+
+  const getDepartaments = async () => {
+    const response = await fetch(
+      "https://raw.githubusercontent.com/marcovega/colombia-json/master/colombia.min.json"
+    );
+    setDepartamentos(await response.json());
+  };
 
   const createRecurso = async (recurso) => {
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
+        Accept: "application/json",
         "x-access-token": localStorage.getItem("token_user"),
       },
       body: JSON.stringify(recurso),
@@ -54,19 +69,22 @@ const Recursos = () => {
 
   const UpdateRecurso = async (recurso) => {
     let id = recurso.id;
+
+    delete recurso.id;
+
     const requestOptions = {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
+        Accept: "application/json",
         "x-access-token": localStorage.getItem("token_user"),
       },
       body: JSON.stringify(recurso),
     };
-    const response = await fetch(url + "recursos/" + recurso.id, requestOptions);
+    const response = await fetch(url + "recursos/" + id, requestOptions);
     const data = await response.json();
     if (data.errors) {
-      console.log(data.error)
+      console.log(data.error);
       return false;
     }
     setTypeForm("create");
@@ -79,14 +97,14 @@ const Recursos = () => {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
+        Accept: "application/json",
         "x-access-token": localStorage.getItem("token_user"),
       },
     };
     const response = await fetch(url + "recursos/" + id, requestOptions);
     const data = await response.json();
     if (data.errors) {
-      console.log(data.errors)
+      console.log(data.errors);
       return false;
     }
     loadData();
@@ -98,12 +116,17 @@ const Recursos = () => {
         {typeForm == "create" ? (
           <FormRecurso createRecurso={createRecurso} />
         ) : (
-          <FormUpdateRecurso UpdateRecurso={UpdateRecurso} recurso={recurso} />
+          <FormUpdateRecurso
+            departamentos={departamentos}
+            UpdateRecurso={UpdateRecurso}
+            recurso={recurso}
+          />
         )}
       </div>
       <div className="col-span-2 ">
         {recursos && (
           <ListRecursos
+            departamentos={departamentos}
             deleteRecurso={deleteRecurso}
             selectRecurso={selectRecurso}
             recursos={recursos}
